@@ -13,7 +13,7 @@ Package.onUse(function (api) {
   api.use('ecmascript')
   api.use('templating', 'client')
   api.use('semantic:ui@2.0.0', 'client', {weak: true})
-  api.use('hacknlove:semantic-input-image', 'client', {weak: true})
+  api.use('hacknlove:semantic-input-image@0.0.2', 'client', {weak: true})
   api.addFiles('semantic-form.html', 'client')
   api.addFiles('semantic-form.js', 'client')
 })
