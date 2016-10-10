@@ -49,7 +49,7 @@ On top of the semantic-ui validations, semantic-form has the `event` validation
     })
 
     Template.foo.events({
-      'validation input[name=bar]': function (event, instance, param) {
+      'validate input[name=bar]': function (event, instance, param) {
         // here you can do your custom validation accesing your Template, the doom, whatever you need, but remember that it must be synchronous
       }
     })
