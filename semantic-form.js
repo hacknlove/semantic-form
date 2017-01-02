@@ -3,8 +3,12 @@
 Meteor.startup(function () {
   Template.semanticForm.collection = new Mongo.Collection(null)
   Template.semanticForm.reload = new Mongo.Collection(null)
-  $.fn.form.settings.rules.event = function (value, param) {
-    return this.triggerHandler('validate', param)
+  if ($.fn.form) {
+    $.fn.form.settings.rules.event = function (value, param) {
+      return this.triggerHandler('validate', param)
+    }
+  } else {
+    console.error('have you installed semantic:ui?')
   }
 })
 
@@ -22,12 +26,12 @@ Template.semanticForm.onRendered(function () {
 
   var config = {
     onSuccess: function (event, data) {
-      form.trigger('success', data, form.form('add'))
+      form.trigger('success', [data, form.form('add')])
       return false
     },
     onFailure: function () {
       var data = form.form('get values')
-      form.trigger('failure', data, form.form('add'))
+      form.trigger('failure', [data, form.form('add')])
       return false
     }
   }
@@ -45,7 +49,7 @@ Template.semanticForm.onRendered(function () {
 
     var current = Template.semanticForm.collection.findOne({_id: that.data.name})
     if (!current) {
-      current = that.data.values
+      current = that.data.values || {}
       current._id = that.data.name
       Template.semanticForm.collection.insert(current)
       Template.semanticForm.reload.insert({_id: that.data.name})
@@ -60,7 +64,7 @@ Template.semanticForm.onRendered(function () {
       return
     }
 
-    var actual = Template.currentData().values
+    var actual = Template.currentData().values || {}
     delete actual._id
     var current = Template.semanticForm.collection.findOne({_id: that.data.name}) || {}
     var $set = {
