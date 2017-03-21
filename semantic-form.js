@@ -85,6 +85,9 @@ Template.semanticForm.events({
     if (event.currentTarget.type === 'file') {
       return
     }
+    if (!event.currentTarget.name) {
+      return
+    }
     template.$(event.currentTarget).parents('.field').removeClass('error')
     Template.semanticForm.collection.update({_id: Template.currentData().name}, {$set: {[event.currentTarget.name]: event.currentTarget.value}})
   },
@@ -107,7 +110,7 @@ Template.semanticForm.events({
 })
 
 Template.semanticForm.helpers({
-  current: function () {
+  current: function (pedo) {
     return Template.semanticForm.collection.findOne({_id: Template.currentData().name})
   },
   actual: function () {
