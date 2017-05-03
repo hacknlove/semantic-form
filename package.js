@@ -2,7 +2,7 @@
 
 Package.describe({
   name: 'hacknlove:semantic-form',
-  version: '0.0.5',
+  version: '0.0.6',
   summary: 'validate and use semantic-forms',
   git: 'https://github.com/hacknlove/semantic-form',
   documentation: 'README.md'

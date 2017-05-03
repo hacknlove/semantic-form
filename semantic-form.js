@@ -20,7 +20,9 @@ Template.semanticForm.onCreated(function () {
 
 Template.semanticForm.onRendered(function () {
   var form = this.$('form')
-  form.find('.ui.checkbox').checkbox()
+  if (form.find('.ui.checkbox').checkbox) {
+    form.find('.ui.checkbox').checkbox()
+  }
   form.addClass('loading')
   var that = this
 
