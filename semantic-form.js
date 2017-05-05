@@ -1,4 +1,10 @@
-/* globals Mongo, Template, Meteor, $ */
+/* global
+  Mongo
+  Template
+  Meteor
+  $
+  Tracker
+*/
 
 Meteor.startup(function () {
   Template.semanticForm.collection = new Mongo.Collection(null)
@@ -19,6 +25,7 @@ Template.semanticForm.onCreated(function () {
 })
 
 Template.semanticForm.onRendered(function () {
+  var self = this
   var form = this.$('form')
   if (form.find('.ui.checkbox').checkbox) {
     form.find('.ui.checkbox').checkbox()
@@ -40,45 +47,47 @@ Template.semanticForm.onRendered(function () {
   if (this.data.fields) {
     config.fields = this.data.fields
   }
+  console.log('form')
+  Meteor.setTimeout(function () {
+    form.form(config)
 
-  form.form(config)
-
-  this.autorun(function (computation) {
-    if (!Template.currentData().ready) {
-      return
-    }
-    form.removeClass('loading')
-
-    var current = Template.semanticForm.collection.findOne({_id: that.data.name})
-    if (!current) {
-      current = that.data.values || {}
-      current._id = that.data.name
-      Template.semanticForm.collection.insert(current)
-      Template.semanticForm.reload.insert({_id: that.data.name})
-    }
-    form.form('set values', current)
-    computation.stop()
-  })
-
-  this.autorun(function () {
-    var data = Template.currentData()
-    if (!data.ready) {
-      return
-    }
-
-    var actual = Template.currentData().values || {}
-    delete actual._id
-    var current = Template.semanticForm.collection.findOne({_id: that.data.name}) || {}
-    var $set = {
-      __any: false
-    }
-    Object.keys(actual).forEach(function (name) {
-      if (actual[name] !== current[name]) {
-        $set[name] = true
-        $set.__any = true
+    self.autorun(function (computation) {
+      if (!Template.currentData().ready) {
+        return
       }
+      form.removeClass('loading')
+
+      var current = Template.semanticForm.collection.findOne({_id: that.data.name})
+      if (!current) {
+        current = that.data.values || {}
+        current._id = that.data.name
+        Template.semanticForm.collection.insert(current)
+        Template.semanticForm.reload.insert({_id: that.data.name})
+      }
+      form.form('set values', current)
+      computation.stop()
     })
-    Template.semanticForm.reload.update({_id: data.name}, {$set: $set})
+
+    self.autorun(function () {
+      var data = Template.currentData()
+      if (!data.ready) {
+        return
+      }
+
+      var actual = Template.currentData().values || {}
+      delete actual._id
+      var current = Template.semanticForm.collection.findOne({_id: that.data.name}) || {}
+      var $set = {
+        __any: false
+      }
+      Object.keys(actual).forEach(function (name) {
+        if (actual[name] !== current[name]) {
+          $set[name] = true
+          $set.__any = true
+        }
+      })
+      Template.semanticForm.reload.update({_id: data.name}, {$set: $set})
+    })
   })
 })
 
@@ -121,4 +130,58 @@ Template.semanticForm.helpers({
   reload: function () {
     return Template.semanticForm.reload.findOne({_id: Template.currentData().name})
   }
+})
+
+var onRendered = function (instance, callback) {
+  if (instance.firstNode) {
+    return callback(instance)
+  }
+  Meteor.setTimeout(function () {
+    onRendered(instance, callback)
+  }, 50)
+}
+
+Handlebars.registerHelper('semanticDinamicForm', function (options) {
+  onRendered(Template.instance(), function (instance) {
+    var form = instance.$('form')
+    if (form.find('.ui.checkbox').checkbox) {
+      form.find('.ui.checkbox').checkbox()
+    }
+    if (form.hasClass('loaded')) {
+      return
+    }
+    if (typeof options.hash.ready === 'function' && options.hash.ready()) {
+      form.addClass('loading')
+      return
+    }
+    if (!options.hash.ready) {
+      form.addClass('loading')
+      return
+    }
+    if (options.hash.ready.get && !options.hash.ready.get()) {
+      form.addClass('loading')
+      return
+    }
+    form.removeClass('loading')
+    form.addClass('loaded')
+
+    var config = {
+      onSuccess: function (event, data) {
+        form.trigger('success', [data, form.form('add')])
+        return false
+      },
+      onFailure: function () {
+        var data = form.form('get values')
+        form.trigger('failure', [data, form.form('add')])
+        return false
+      }
+    }
+
+    if (options.hash.fields) {
+      config.fields = options.hash.fields
+    }
+    Tracker.afterFlush(function () {
+      form.form(config)
+    })
+  })
 })
