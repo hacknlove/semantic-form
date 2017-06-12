@@ -4,6 +4,7 @@
   Meteor
   $
   Tracker
+  Handlebars
 */
 
 Meteor.startup(function () {
@@ -142,8 +143,10 @@ var onRendered = function (instance, callback) {
 }
 
 Handlebars.registerHelper('semanticDinamicForm', function (options) {
+  var selector = options.hash.selector || 'form'
   onRendered(Template.instance(), function (instance) {
-    var form = instance.$('form')
+    var form = instance.$(selector)
+    console.log(form)
     if (form.find('.ui.checkbox').checkbox) {
       form.find('.ui.checkbox').checkbox()
     }
