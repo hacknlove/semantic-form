@@ -48,7 +48,6 @@ Template.semanticForm.onRendered(function () {
   if (this.data.fields) {
     config.fields = this.data.fields
   }
-  console.log('form')
   Meteor.setTimeout(function () {
     form.form(config)
 
@@ -143,10 +142,10 @@ var onRendered = function (instance, callback) {
 }
 
 Handlebars.registerHelper('semanticDinamicForm', function (options) {
+  options = options || {hash: {}}
   var selector = options.hash.selector || 'form'
   onRendered(Template.instance(), function (instance) {
     var form = instance.$(selector)
-    console.log(form)
     if (form.find('.ui.checkbox').checkbox) {
       form.find('.ui.checkbox').checkbox()
     }
